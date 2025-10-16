@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Hangman</title>
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f0f4f8;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+.left-column {
+    flex: 0 0 150px;
+}
+.middle-column {
+    flex: 1 1 250px;
+    max-width: 300px;
+}
+.right-column {
+    flex: 0 0 200px;
+}
+#word-display {
+    font-size: 2em;
+    margin: 20px 0;
+    text-align: center;
+}
+.word-letter {
+    display: inline-block;
+    width: 24px;
+    text-align: center;
+}
+.word-space {
+    display: inline-block;
+    width: 18px; /* bigger gap between words */
+}
+#hangman {
+    width: 150px;
+    height: 200px;
+    position: relative;
+    margin: auto;
+}
+.hangman-part {
+    position: absolute;
+    display: none;
+    background: #333;
+}
+.head {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    top: 0; left: 60px;
+}
+.body {
+    width: 6px; height: 50px;
+    top: 30px; left: 72px;
+}
+.arm-left {
+    width: 30px; height: 6px;
+    top: 40px; left: 42px;
+    transform: rotate(-45deg); transform-origin: left;
+}
+.arm-right {
+    width: 30px; height: 6px;
+    top: 40px; left: 72px;
+    transform: rotate(45deg); transform-origin: right;
+}
+.leg-left {
+    width: 30px; height: 6px;
+    top: 80px; left: 42px;
+    transform: rotate(45deg); transform-origin: left;
+}
+.leg-right {
+    width: 30px; height: 6px;
+    top: 80px; left: 72px;
+    transform: rotate(-45deg); transform-origin: right;
+}
+#letters-input, #word-input {
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+input {
+    padding: 8px;
+    font-size: 16px;
+    flex: 1;
+}
+button {
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+button:hover { background-color: #45a049; }
+#feedback {
+    text-align: center;
+    margin-top: 10px;
+    height: 24px;
+    font-weight: bold;
+}
+#guessed-letters {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+.guess-letter {
+    padding: 5px 10px;
+    border-radius: 5px;
+    background: #e0e0e0;
+    font-weight: bold;
+}
+.correct { background-color: #c8e6c9; }
+.wrong { background-color: #ffcdd2; }
+#hint { color: #1976d2; margin-top: 20px; font-style: italic; text-align: center; }
+#fun { margin-top: 20px; text-align: center; font-size: 1.1em; }
+.footer {
+    margin-top: auto;
+    text-align: left;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+#admin-key {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.5em;
+}
+</style>
+</head>
+<body>
+
+<h1>Daily Hangman</h1>
+
+<div class="container">
+    <!-- Left: Hangman -->
+    <div class="left-column">
+        <div id="hangman">
+            <div class="hangman-part head"></div>
+            <div class="hangman-part body"></div>
+            <div class="hangman-part arm-left"></div>
+            <div class="hangman-part arm-right"></div>
+            <div class="hangman-part leg-left"></div>
+            <div class="hangman-part leg-right"></div>
+        </div>
+    </div>
+
+    <!-- Middle: Inputs and Word -->
+    <div class="middle-column">
+        <div id="word-display"></div>
+        <div id="letters-input">
+            <input type="text" id="letter" maxlength="1" placeholder="Guess a letter" autocomplete="off">
+            <button onclick="guessLetter()">Guess</button>
+        </div>
+        <div id="word-input">
+            <input type="text" id="whole-word" placeholder="Guess the whole word">
+            <button onclick="guessWholeWord()">Guess Word</button>
+        </div>
+        <div id="feedback"></div>
+        <div id="guessed-letters"></div>
+    </div>
+
+    <!-- Right: Hint and Fun -->
+    <div class="right-column">
+        <div id="hint"></div>
+        <div id="fun">🐕 Chip is ready to cheer you on!</div>
+        <div id="mascot-container" style="margin-top: 20px; text-align: center;">
+            <div id="mascot" style="font-size: 3em;">🐕</div>
+            <button onclick="chipRun()" style="margin-top:10px;">Press Me</button>
+        </div>
+    </div>
+</div>
+
+<div class="footer">Produced by the greatest game player of all time</div>
+
+<!-- Admin key -->
+<div id="admin-key" onclick="adminClick()">🔑</div>
+
+<script>
+// ======================
+// Game State Variables
+// ======================
+let dailyWord = "matt loses"; // default word/phrase
+let dailyHint = "Your opponent might be sad!";
+let maxWrong = 8;
+let wrongGuesses = 0;
+let displayWord = [];
+let guessedLetters = [];
+let wholeWordGuesses = 0;
+const maxWholeGuesses = 2;
+
+const hangmanParts = [
+    document.querySelector(".head"),
+    document.querySelector(".body"),
+    document.querySelector(".arm-left"),
+    document.querySelector(".arm-right"),
+    document.querySelector(".leg-left"),
+    document.querySelector(".leg-right")
+];
+
+// ======================
+// Initialize Game
+// ======================
+function initGame() {
+    wrongGuesses = 0;
+    guessedLetters = [];
+    wholeWordGuesses = 0;
+
+    // Prepare display word with underscores and spaces
+    displayWord = [];
+    for (let c of dailyWord) {
+        if (c === " ") displayWord.push(" "); // keep spaces
+        else displayWord.push("_");
+    }
+
+    renderDisplay();
+    hangmanParts.forEach(p => p.style.display = "none");
+    document.getElementById("guessed-letters").innerHTML = "";
+    document.getElementById("feedback").textContent = "";
+    document.getElementById("hint").textContent = "";
+    document.getElementById("letter").disabled = false;
+    document.querySelector("#letters-input button").disabled = false;
+    document.getElementById("whole-word").disabled = false;
+    document.querySelector("#word-input button").disabled = false;
+}
+initGame();
+
+// ======================
+// Render Display Word
+// ======================
+function renderDisplay() {
+    const container = document.getElementById("word-display");
+    container.innerHTML = "";
+    for (let c of displayWord) {
+        if (c === " ") {
+            const span = document.createElement("span");
+            span.className = "word-space";
+            span.innerHTML = "&nbsp;"; // visible space
+            container.appendChild(span);
+        } else {
+            const span = document.createElement("span");
+            span.className = "word-letter";
+            span.textContent = c;
+            container.appendChild(span);
+        }
+    }
+}
+
+// ======================
+// Guess Letter
+// ======================
+function guessLetter() {
+    const input = document.getElementById("letter");
+    const letter = input.value.toLowerCase();
+    const feedback = document.getElementById("feedback");
+    feedback.textContent = "";
+    input.value = "";
+    input.focus();
+
+    if (!letter.match(/[a-z]/) || letter.length !== 1) {
+        feedback.textContent = "Enter a valid letter.";
+        return;
+    }
+    if (guessedLetters.includes(letter)) {
+        feedback.textContent = "You already guessed that letter!";
+        return;
+    }
+
+    guessedLetters.push(letter);
+
+    if (dailyWord.includes(letter)) {
+        for (let i = 0; i < dailyWord.length; i++) {
+            if (dailyWord[i] === letter) displayWord[i] = letter;
+        }
+        renderDisplay();
+        renderGuessed(letter, true);
+    } else {
+        wrongGuesses++;
+        renderHangman();
+        renderGuessed(letter, false);
+    }
+
+    if (wrongGuesses >= 3) document.getElementById("hint").textContent = `Hint: ${dailyHint}`;
+
+    checkWinLose();
+}
+
+// ======================
+// Guess Whole Word
+// ======================
+function guessWholeWord() {
+    const input = document.getElementById("whole-word");
+    const guess = input.value.toLowerCase();
+    input.value = "";
+    input.focus();
+    wholeWordGuesses++;
+
+    if (guess === dailyWord) {
+        displayWord = dailyWord.split("");
+        renderDisplay();
+        endGame(true, `🎉 You guessed the word! Congratulations!`);
+    } else {
+        wrongGuesses++;
+        renderHangman();
+        document.getElementById("feedback").textContent = `Wrong whole word guess!`;
+        if (wholeWordGuesses >= maxWholeGuesses) {
+            document.getElementById("feedback").textContent += ` No more whole word guesses.`;
+        }
+        if (wrongGuesses >= 3) document.getElementById("hint").textContent = `Hint: ${dailyHint}`;
+        checkWinLose();
+    }
+}
+
+// ======================
+// Render Hangman
+// ======================
+function renderHangman() {
+    if (wrongGuesses <= hangmanParts.length) hangmanParts[wrongGuesses-1].style.display = "block";
+}
+
+// ======================
+// Render Guessed Letters
+// ======================
+function renderGuessed(letter, correct) {
+    const container = document.getElementById("guessed-letters");
+    const span = document.createElement("span");
+    span.textContent = letter;
+    span.className = "guess-letter " + (correct ? "correct" : "wrong");
+    container.appendChild(span);
+}
+
+// ======================
+// Check Win/Lose
+// ======================
+function checkWinLose() {
+    if (!displayWord.includes("_")) {
+        endGame(true, `🎉 You guessed the word! Congratulations!`);
+    } else if (wrongGuesses >= maxWrong) {
+        displayWord = dailyWord.split("");
+        renderDisplay();
+        endGame(false, `💀 Game over! The word was "${dailyWord}".`);
+    }
+}
+
+function endGame(win, message) {
+    document.getElementById("feedback").textContent = message;
+    document.getElementById("letter").disabled = true;
+    document.querySelector("#letters-input button").disabled = true;
+    document.getElementById("whole-word").disabled = true;
+    document.querySelector("#word-input button").disabled = true;
+}
+
+// ======================
+// Admin Key
+// ======================
+const adminKey = "1234";
+function adminClick() {
+    const key = prompt("Enter admin key:");
+    if (key === adminKey) {
+        const newWord = prompt("Enter new word or phrase:").toLowerCase();
+        const newHint = prompt("Enter a hint for the word:");
+        if (newWord && newHint) {
+            dailyWord = newWord;
+            dailyHint = newHint;
+            initGame();
+            alert("New word and hint set!");
+        }
+    } else {
+        alert("Incorrect key!");
+    }
+}
+
+// ======================
+// Mascot Chip
+// ======================
+function chipRun() {
+    const mascot = document.getElementById("mascot");
+    alert("Hi! I'm Chip 🐾");
+
+    mascot.style.position = "relative";
+    mascot.style.left = "0px";
+
+    let pos = 0;
+    const endPos = 150;
+    const interval = setInterval(() => {
+        pos += 5;
+        mascot.style.left = pos + "px";
+        if (pos >= endPos) {
+            clearInterval(interval);
+            mascot.style.left = "0px";
+        }
+    }, 50);
+}
+
+// ======================
+// Enter Key Support
+// ======================
+document.getElementById("letter").addEventListener("keypress", function(e){
+    if(e.key === "Enter") guessLetter();
+});
+document.getElementById("whole-word").addEventListener("keypress", function(e){
+    if(e.key === "Enter") guessWholeWord();
+});
+</script>
+</body>
+</html>
