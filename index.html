@@ -2,429 +2,359 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daily Hangman</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Under the Theme — Homey Edition</title>
 <style>
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f0f4f8;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+:root{
+  --bg:#eaf0ea;
+  --card:#fcfdf5;
+  --muted:#4f4f4f;
+  --accent:#276749;
+  --accent2:#38a169;
+  --danger:#e53e3e;
+  --shadow:0 6px 20px rgba(0,0,0,0.08);
+  --radius:12px;
 }
-h1 {
-    text-align: center;
-    margin-bottom: 10px;
+body{
+  margin:0;
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);
+  color:#1a202c;
+  display:flex;
+  justify-content:center;
+  padding:28px;
 }
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 40px;
-    flex-wrap: wrap;
+.app{
+  max-width:980px;
+  width:100%;
+  background:var(--card);
+  border-radius:16px;
+  padding:20px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  gap:16px;
 }
-.left-column {
-    flex: 0 0 150px;
+header{
+  display:flex; justify-content:space-between; align-items:center;
 }
-.middle-column {
-    flex: 1 1 250px;
-    max-width: 300px;
+h1{
+  font-family:'Merriweather',serif;
+  font-size:24px; margin:0; color:var(--accent);
 }
-.right-column {
-    flex: 0 0 200px;
+.meta{font-size:13px; color:var(--muted);}
+#adminKey{
+  font-size:20px; cursor:pointer; color:var(--accent2); user-select:none;
 }
-#word-display {
-    font-size: 2em;
-    margin: 20px 0;
-    text-align: center;
+.layout{
+  display:flex; gap:18px; flex-wrap:wrap;
 }
-.word-letter {
-    display: inline-block;
-    width: 24px;
-    text-align: center;
+/* Left */
+.left{
+  flex:0 0 260px;
+  min-width:220px;
+  background:var(--card);
+  border-radius:12px;
+  padding:14px;
+  box-shadow:var(--shadow);
 }
-.word-space {
-    display: inline-block;
-    width: 18px; /* bigger gap between words */
+.themeBox{
+  text-align:center;
+  padding:12px;
+  background:#d8f3dc;
+  border-radius:8px;
+  transform:rotate(-1deg);
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
 }
-#hangman {
-    width: 150px;
-    height: 200px;
-    position: relative;
-    margin: auto;
+.themeLabel{font-size:12px; color:var(--muted);}
+.themeName{font-weight:700; font-size:18px; color:var(--accent);}
+.statusRow{display:flex; justify-content:space-between; margin-top:12px; font-size:13px; color:var(--muted);}
+.progressBarContainer{
+  margin-top:14px;
+  height:8px;
+  background:#c6f6d5;
+  border-radius:999px;
+  overflow:hidden;
 }
-.hangman-part {
-    position: absolute;
-    display: none;
-    background: #333;
+.progressBar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent));}
+/* Center */
+.center{
+  flex:1 1 420px;
+  min-width:280px;
+  background:#f0fdf4;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:var(--shadow);
 }
-.head {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    top: 0; left: 60px;
+.wordHint{font-size:14px; text-align:center; margin-bottom:8px; color:var(--muted);}
+.attr-inputs{
+  display:flex; gap:8px; margin-bottom:10px; align-items:center;
 }
-.body {
-    width: 6px; height: 50px;
-    top: 30px; left: 72px;
+.attr-inputs input[type="text"]{
+  flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e6eef8; font-size:15px;
 }
-.arm-left {
-    width: 30px; height: 6px;
-    top: 40px; left: 42px;
-    transform: rotate(-45deg); transform-origin: left;
+.btn{
+  background:var(--accent2); color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; font-weight:600;
 }
-.arm-right {
-    width: 30px; height: 6px;
-    top: 40px; left: 72px;
-    transform: rotate(45deg); transform-origin: right;
+.btn.secondary{background:var(--accent); opacity:0.9;}
+.history{margin-top:10px; display:flex; flex-direction:column; gap:8px;}
+.history-item{
+  background:#fcfeff;
+  border-radius:10px;
+  padding:10px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  box-shadow:0 4px 14px rgba(0,0,0,0.04);
 }
-.leg-left {
-    width: 30px; height: 6px;
-    top: 80px; left: 42px;
-    transform: rotate(45deg); transform-origin: left;
+.guessText{font-weight:700; width:110px; text-transform:lowercase; color:#1a202c;}
+.scoreCell{flex:1; display:flex; align-items:center; gap:12px;}
+.scoreBar{height:10px; background:#d8f3dc; border-radius:999px; overflow:hidden;}
+.scoreFill{height:100%; background:linear-gradient(90deg,var(--accent2), var(--accent)); width:0%;}
+.scoreLabel{width:42px; font-weight:700; text-align:right; color:var(--muted); font-size:13px;}
+.final-guess{margin-top:12px; display:flex; gap:8px;}
+.feedback{margin-top:10px; color:var(--muted); font-size:14px; min-height:20px; text-align:center;}
+/* Right */
+.right{
+  flex:0 0 200px;
+  min-width:180px;
+  background:var(--card);
+  border-radius:12px;
+  padding:12px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
-.leg-right {
-    width: 30px; height: 6px;
-    top: 80px; left: 72px;
-    transform: rotate(-45deg); transform-origin: right;
-}
-#letters-input, #word-input {
-    margin: 10px 0;
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-}
-input {
-    padding: 8px;
-    font-size: 16px;
-    flex: 1;
-}
-button {
-    padding: 8px 12px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-}
-button:hover { background-color: #45a049; }
-#feedback {
-    text-align: center;
-    margin-top: 10px;
-    height: 24px;
-    font-weight: bold;
-}
-#guessed-letters {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-}
-.guess-letter {
-    padding: 5px 10px;
-    border-radius: 5px;
-    background: #e0e0e0;
-    font-weight: bold;
-}
-.correct { background-color: #c8e6c9; }
-.wrong { background-color: #ffcdd2; }
-#hint { color: #1976d2; margin-top: 20px; font-style: italic; text-align: center; }
-#fun { margin-top: 20px; text-align: center; font-size: 1.1em; }
-.footer {
-    margin-top: auto;
-    text-align: left;
-    font-size: 0.9em;
-    font-weight: bold;
-}
-#admin-key {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 1.5em;
-}
+.panel-title{font-size:13px; color:var(--muted);}
+.mascot{text-align:center; font-size:42px;}
+.mascot button{margin-top:8px; width:100%; padding:8px; border-radius:8px; border:none; background:#38a169; color:white; font-weight:700; cursor:pointer;}
+.adminDropdown{margin-top:6px; display:none; flex-direction:column; gap:6px;}
+.adminDropdown button{padding:6px 8px; border-radius:6px; border:none; background:#e0f2f1; color:var(--accent2); cursor:pointer;}
+footer{margin-top:12px; color:var(--muted); font-size:13px; display:flex; justify-content:space-between; align-items:center;}
+.producer{font-family:'Brush Script MT', cursive; font-weight:700;}
+@media(max-width:860px){.layout{flex-direction:column;}.left,.right{width:100%; max-width:100%;}}
 </style>
 </head>
 <body>
-
-<h1>Daily Hangman</h1>
-
-<div class="container">
-    <!-- Left: Hangman -->
-    <div class="left-column">
-        <div id="hangman">
-            <div class="hangman-part head"></div>
-            <div class="hangman-part body"></div>
-            <div class="hangman-part arm-left"></div>
-            <div class="hangman-part arm-right"></div>
-            <div class="hangman-part leg-left"></div>
-            <div class="hangman-part leg-right"></div>
-        </div>
-    </div>
-
-    <!-- Middle: Inputs and Word -->
-    <div class="middle-column">
-        <div id="word-display"></div>
-        <div id="letters-input">
-            <input type="text" id="letter" maxlength="1" placeholder="Guess a letter" autocomplete="off">
-            <button onclick="guessLetter()">Guess</button>
-        </div>
-        <div id="word-input">
-            <input type="text" id="whole-word" placeholder="Guess the whole word">
-            <button onclick="guessWholeWord()">Guess Word</button>
-        </div>
-        <div id="feedback"></div>
-        <div id="guessed-letters"></div>
-    </div>
-
-    <!-- Right: Hint and Fun -->
-    <div class="right-column">
-        <div id="hint"></div>
-        <div id="fun">🐕 Chip is ready to cheer you on!</div>
-        <div id="mascot-container" style="margin-top: 20px; text-align: center;">
-            <div id="mascot" style="font-size: 3em;">🐕</div>
-            <button onclick="chipRun()" style="margin-top:10px;">Press Me</button>
-        </div>
-    </div>
+<div class="app">
+<header>
+  <div>
+    <h1>Under the Theme</h1>
+    <div class="meta">Daily strategic guessing — 3 attribute tries → 2 final guesses</div>
+  </div>
+  <div id="adminKey" title="Admin Key">🔑</div>
+</header>
+<div class="layout">
+<aside class="left">
+  <div class="themeBox">
+    <div class="themeLabel">Theme (today)</div>
+    <div class="themeName" id="themeName">Loading...</div>
+  </div>
+  <div class="statusRow">
+    <div>Attributes left</div><div id="attrsLeft">3</div>
+  </div>
+  <div class="statusRow">
+    <div>Final guesses left</div><div id="finalLeft">2</div>
+  </div>
+  <div class="progressBarContainer">
+    <div id="progressBar" class="progressBar"></div>
+  </div>
+</aside>
+<main class="center">
+  <div class="wordHint" id="wordHint">Make 3 attribute guesses to see numeric proximity (0–100).</div>
+  <div class="attr-inputs">
+    <input id="attrInput" type="text" placeholder="Enter an attribute" autocomplete="off">
+    <button class="btn" id="attrBtn" onclick="submitAttribute()">Guess</button>
+  </div>
+  <div class="history" id="history"></div>
+  <div class="final-guess" id="finalArea" style="display:none">
+    <input id="finalInput" type="text" placeholder="Guess the hidden word">
+    <button class="btn secondary" onclick="submitFinal()" id="finalBtn">Submit Guess</button>
+  </div>
+  <div class="feedback" id="feedback"></div>
+</main>
+<aside class="right">
+  <div>
+    <div class="panel-title">Hint / Strategy</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:6px">Use attributes smartly — not the obvious single-word match.</div>
+  </div>
+  <div>
+    <div class="panel-title">Mascot</div>
+    <div class="mascot" id="mascot">🐶</div>
+    <button onclick="chipRun()">Press Me — Chip</button>
+  </div>
+  <div class="adminDropdown" id="adminDropdown"></div>
+</aside>
 </div>
-
-<div class="footer">Produced by the greatest game player of all time</div>
-
-<!-- Admin key -->
-<div id="admin-key" onclick="adminClick()">🔑</div>
-
+<footer>
+  <div class="producer">Produced by the greatest game player of all time</div>
+  <div class="meta" id="seedInfo"></div>
+</footer>
+</div>
 <script>
-// ======================
-// Game State Variables
-// ======================
-let dailyWord = "ayda loses"; // default word/phrase
-let dailyHint = "When I beat you in Wordle, this means you...";
-let maxWrong = 8;
-let wrongGuesses = 0;
-let displayWord = [];
-let guessedLetters = [];
-let wholeWordGuesses = 0;
-const maxWholeGuesses = 2;
-
-const hangmanParts = [
-    document.querySelector(".head"),
-    document.querySelector(".body"),
-    document.querySelector(".arm-left"),
-    document.querySelector(".arm-right"),
-    document.querySelector(".leg-left"),
-    document.querySelector(".leg-right")
+/* ------------------- DATA ------------------- */
+const THEMES = [
+{
+  name:"Mountains & Earth",
+  targetWord:"volcano",
+  attributeMap:{
+    "lava":85,"rock":60,"mountain":70,"crust":50,"plate":65,"ash":80,"ridge":55,"valley":40,
+    "fault":75,"pressure":60,"peak":50,"magma":90,"volcano":100,"caldera":80,"geyser":75,
+    "boulder":55,"summit":60,"slope":50,"soil":45,"erosion":55,"cliff":60,"ravine":45,
+    "fumarole":70,"tectonic":90,"moraine":65,"strata":55,"seismic":70,"melt":60,
+    "igneous":65,"basalt":60,"andesite":60,"lavaflow":80,"ashcloud":75,"volcanic":85
+  }
+},
+{
+  name:"Oceans & Sea Life",
+  targetWord:"coral",
+  attributeMap:{
+    "plankton":70,"krill":65,"reef":90,"wave":55,"shell":50,"seaweed":60,"fish":50,
+    "ocean":40,"current":80,"tide":75,"whale":85,"dolphin":75,"shark":70,"jellyfish":60,
+    "algae":55,"squid":50,"kraken":40,"barnacle":60,"kelp":55,"urchin":50
+  }
+},
+{
+  name:"Weather & Atmosphere",
+  targetWord:"tornado",
+  attributeMap:{
+    "storm":80,"wind":75,"rain":60,"cloud":50,"hail":55,"cyclone":85,"humidity":60,
+    "front":70,"lightning":75,"thunder":65,"tornado":100,"funnel":85,"twister":90,"barometer":50
+  }
+},
+{
+  name:"Food & Cooking",
+  targetWord:"caramel",
+  attributeMap:{
+    "sugar":70,"butter":65,"stir":50,"whisk":55,"bake":60,"caramel":100,"sauce":80,
+    "chocolate":75,"vanilla":60,"cream":65,"boil":55,"brown":50,"simmer":50
+  }
+},
+{
+  name:"Science & Space",
+  targetWord:"nebula",
+  attributeMap:{
+    "star":75,"planet":60,"orbit":55,"photon":50,"nebula":100,"quasar":85,"blackhole":80,
+    "gravity":65,"comet":55,"asteroid":50,"cosmos":60,"galaxy":70
+  }
+},
+{
+  name:"Plants & Nature",
+  targetWord:"fern",
+  attributeMap:{
+    "leaf":70,"root":60,"seed":50,"fern":100,"moss":65,"canopy":55,"tree":60,"vine":50,
+    "bark":50,"photosynthesis":60,"bloom":55,"flower":50
+  }
+}
 ];
 
-// ======================
-// Initialize Game
-// ======================
-function initGame() {
-    wrongGuesses = 0;
-    guessedLetters = [];
-    wholeWordGuesses = 0;
+/* ------------------- DATE / GAME STATE ------------------- */
+let dailyThemeIndex = 0;
+let dailyTheme = THEMES[dailyThemeIndex];
+let dailyWord = dailyTheme.targetWord;
+let attrsLeft = 3;
+let finalLeft = 2;
+let historyEl = document.getElementById("history");
+let attrInput = document.getElementById("attrInput");
+let finalInput = document.getElementById("finalInput");
+document.getElementById("themeName").textContent = dailyTheme.name;
 
-    // Prepare display word with underscores and spaces
-    displayWord = [];
-    for (let c of dailyWord) {
-        if (c === " ") displayWord.push(" "); // keep spaces
-        else displayWord.push("_");
-    }
-
-    renderDisplay();
-    hangmanParts.forEach(p => p.style.display = "none");
-    document.getElementById("guessed-letters").innerHTML = "";
-    document.getElementById("feedback").textContent = "";
-    document.getElementById("hint").textContent = "";
-    document.getElementById("letter").disabled = false;
-    document.querySelector("#letters-input button").disabled = false;
-    document.getElementById("whole-word").disabled = false;
-    document.querySelector("#word-input button").disabled = false;
+/* ------------------- FUNCTIONS ------------------- */
+function getScore(word){
+  word = word.toLowerCase();
+  if(dailyTheme.attributeMap[word]!==undefined) return dailyTheme.attributeMap[word];
+  // approximate: simple letter overlap
+  let overlap=0;
+  for(let c of word) if(dailyWord.includes(c)) overlap++;
+  let val=Math.floor(overlap/Math.max(word.length,dailyWord.length)*100);
+  return Math.min(val,99);
 }
-initGame();
-
-// ======================
-// Render Display Word
-// ======================
-function renderDisplay() {
-    const container = document.getElementById("word-display");
-    container.innerHTML = "";
-    for (let c of displayWord) {
-        if (c === " ") {
-            const span = document.createElement("span");
-            span.className = "word-space";
-            span.innerHTML = "&nbsp;"; // visible space
-            container.appendChild(span);
-        } else {
-            const span = document.createElement("span");
-            span.className = "word-letter";
-            span.textContent = c;
-            container.appendChild(span);
-        }
-    }
+function submitAttribute(){
+  let val=attrInput.value.trim().toLowerCase();
+  if(!val){return;}
+  let score=getScore(val);
+  historyEl.innerHTML+=`<div class="history-item">
+    <div class="guessText">${val}</div>
+    <div class="scoreCell">
+      <div class="scoreBar"><div class="scoreFill" style="width:${score}%"></div></div>
+      <div class="scoreLabel">${score}</div>
+    </div>
+  </div>`;
+  attrsLeft--;
+  document.getElementById("attrsLeft").textContent=attrsLeft;
+  attrInput.value="";
+  if(attrsLeft<=0){
+    document.getElementById("finalArea").style.display="flex";
+    attrInput.disabled=true;
+    document.getElementById("attrBtn").disabled=true;
+    document.getElementById("feedback").textContent="Make final guesses for the hidden word!";
+  }
+  updateProgress();
 }
-
-// ======================
-// Guess Letter
-// ======================
-function guessLetter() {
-    const input = document.getElementById("letter");
-    const letter = input.value.toLowerCase();
-    const feedback = document.getElementById("feedback");
-    feedback.textContent = "";
-    input.value = "";
-    input.focus();
-
-    if (!letter.match(/[a-z]/) || letter.length !== 1) {
-        feedback.textContent = "Enter a valid letter.";
-        return;
-    }
-    if (guessedLetters.includes(letter)) {
-        feedback.textContent = "You already guessed that letter!";
-        return;
-    }
-
-    guessedLetters.push(letter);
-
-    if (dailyWord.includes(letter)) {
-        for (let i = 0; i < dailyWord.length; i++) {
-            if (dailyWord[i] === letter) displayWord[i] = letter;
-        }
-        renderDisplay();
-        renderGuessed(letter, true);
-    } else {
-        wrongGuesses++;
-        renderHangman();
-        renderGuessed(letter, false);
-    }
-
-    if (wrongGuesses >= 3) document.getElementById("hint").textContent = `Hint: ${dailyHint}`;
-
-    checkWinLose();
+function submitFinal(){
+  let val=finalInput.value.trim().toLowerCase();
+  if(!val){return;}
+  finalLeft--;
+  document.getElementById("finalLeft").textContent=finalLeft;
+  if(val===dailyWord){
+    document.getElementById("feedback").textContent="🎉 Correct! The hidden word was: "+dailyWord;
+    finalInput.disabled=true; document.getElementById("finalBtn").disabled=true;
+  }else if(finalLeft<=0){
+    document.getElementById("feedback").textContent="❌ Out of guesses! The hidden word was: "+dailyWord;
+    finalInput.disabled=true; document.getElementById("finalBtn").disabled=true;
+  }else{
+    document.getElementById("feedback").textContent=`Wrong! You have ${finalLeft} final guesses left.`;
+  }
+  finalInput.value="";
 }
-
-// ======================
-// Guess Whole Word
-// ======================
-function guessWholeWord() {
-    const input = document.getElementById("whole-word");
-    const guess = input.value.toLowerCase();
-    input.value = "";
-    input.focus();
-    wholeWordGuesses++;
-
-    if (guess === dailyWord) {
-        displayWord = dailyWord.split("");
-        renderDisplay();
-        endGame(true, `🎉 You guessed the word! Congratulations!`);
-    } else {
-        wrongGuesses++;
-        renderHangman();
-        document.getElementById("feedback").textContent = `Wrong whole word guess!`;
-        if (wholeWordGuesses >= maxWholeGuesses) {
-            document.getElementById("feedback").textContent += ` No more whole word guesses.`;
-        }
-        if (wrongGuesses >= 3) document.getElementById("hint").textContent = `Hint: ${dailyHint}`;
-        checkWinLose();
-    }
+function updateProgress(){
+  let total=3+2;
+  let done=3-attrsLeft+(2-finalLeft);
+  document.getElementById("progressBar").style.width=Math.floor(done/total*100)+"%";
 }
-
-// ======================
-// Render Hangman
-// ======================
-function renderHangman() {
-    if (wrongGuesses <= hangmanParts.length) hangmanParts[wrongGuesses-1].style.display = "block";
+function chipRun(){
+  let chip=document.getElementById("mascot");
+  chip.textContent="Hi, I'm Chip! 🐕‍🦺";
+  setTimeout(()=>{chip.textContent="🐶";},1800);
 }
-
-// ======================
-// Render Guessed Letters
-// ======================
-function renderGuessed(letter, correct) {
-    const container = document.getElementById("guessed-letters");
-    const span = document.createElement("span");
-    span.textContent = letter;
-    span.className = "guess-letter " + (correct ? "correct" : "wrong");
-    container.appendChild(span);
-}
-
-// ======================
-// Check Win/Lose
-// ======================
-function checkWinLose() {
-    if (!displayWord.includes("_")) {
-        endGame(true, `🎉 You guessed the word! Congratulations!`);
-    } else if (wrongGuesses >= maxWrong) {
-        displayWord = dailyWord.split("");
-        renderDisplay();
-        endGame(false, `💀 Game over! The word was "${dailyWord}".`);
-    }
-}
-
-function endGame(win, message) {
-    document.getElementById("feedback").textContent = message;
-    document.getElementById("letter").disabled = true;
-    document.querySelector("#letters-input button").disabled = true;
-    document.getElementById("whole-word").disabled = true;
-    document.querySelector("#word-input button").disabled = true;
-}
-
-// ======================
-// Admin Key
-// ======================
-const adminKey = "1234";
-function adminClick() {
-    const key = prompt("Enter admin key:");
-    if (key === adminKey) {
-        const newWord = prompt("Enter new word or phrase:").toLowerCase();
-        const newHint = prompt("Enter a hint for the word:");
-        if (newWord && newHint) {
-            dailyWord = newWord;
-            dailyHint = newHint;
-            initGame();
-            alert("New word and hint set!");
-        }
-    } else {
-        alert("Incorrect key!");
-    }
-}
-
-// ======================
-// Mascot Chip
-// ======================
-function chipRun() {
-    const mascot = document.getElementById("mascot");
-    alert("Hi! I'm Chip 🐾");
-
-    mascot.style.position = "relative";
-    mascot.style.left = "0px";
-
-    let pos = 0;
-    const endPos = 150;
-    const interval = setInterval(() => {
-        pos += 5;
-        mascot.style.left = pos + "px";
-        if (pos >= endPos) {
-            clearInterval(interval);
-            mascot.style.left = "0px";
-        }
-    }, 50);
-}
-
-// ======================
-// Enter Key Support
-// ======================
-document.getElementById("letter").addEventListener("keypress", function(e){
-    if(e.key === "Enter") guessLetter();
+/* ------------------- ADMIN KEY ------------------- */
+document.getElementById("adminKey").addEventListener("click",()=>{
+  let pin=prompt("Enter Admin PIN:");
+  if(pin==="1234"){
+    let dropdown=document.getElementById("adminDropdown");
+    dropdown.innerHTML="";
+    THEMES.forEach((theme,index)=>{
+      let btn=document.createElement("button");
+      btn.textContent=theme.name;
+      btn.onclick=()=>{loadTheme(index); dropdown.style.display="none";};
+      dropdown.appendChild(btn);
+    });
+    dropdown.style.display="flex";
+  }else{
+    alert("Incorrect PIN");
+  }
 });
-document.getElementById("whole-word").addEventListener("keypress", function(e){
-    if(e.key === "Enter") guessWholeWord();
-});
+function loadTheme(index){
+  dailyThemeIndex=index;
+  dailyTheme=THEMES[index];
+  dailyWord=dailyTheme.targetWord;
+  attrsLeft=3; finalLeft=2;
+  document.getElementById("themeName").textContent=dailyTheme.name;
+  historyEl.innerHTML="";
+  document.getElementById("attrInput").disabled=false;
+  document.getElementById("attrBtn").disabled=false;
+  document.getElementById("finalArea").style.display="none";
+  document.getElementById("finalInput").disabled=false;
+  document.getElementById("finalBtn").disabled=false;
+  document.getElementById("attrsLeft").textContent=attrsLeft;
+  document.getElementById("finalLeft").textContent=finalLeft;
+  document.getElementById("feedback").textContent="";
+  document.getElementById("progressBar").style.width="0%";
+  document.getElementById("wordHint").textContent="Make 3 attribute guesses to see numeric proximity (0–100).";
+}
 </script>
 </body>
 </html>
-
 
 
